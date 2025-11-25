@@ -10,20 +10,45 @@
 ## 目录结构
 
 ```
-backend/                       # Go 后端（main.go, go.mod, Dockerfile）
-frontend/                      # UmiJS 前端应用
-nginx/                         # Nginx 配置与发布 Dockerfile
-deploy/k8s/                    # Kubernetes namespace/deployment/service/ingress
+services/                      # 所有服务代码
+  ├── backend/                 # Go 后端（main.go, go.mod, Dockerfile）
+  ├── frontend/                # UmiJS 前端应用
+  └── nginx/                   # Nginx 配置与发布 Dockerfile
+deploy/k8s/                    # Kubernetes 部署文件
+  ├── namespace.yaml           # Namespace 资源
+  ├── backend/                 # 后端服务资源
+  │   ├── deployment.yaml      # Deployment
+  │   └── service.yaml         # Service
+  └── nginx/                   # 前端入口资源
+      ├── deployment.yaml      # Deployment
+      ├── service.yaml         # Service
+      └── ingress.yaml         # Ingress
 ```
 
 ## 本地开发
 
 ### 后端（Go）
 
+**方式一：直接运行**
 ```bash
-cd backend
+cd services/backend
 go run main.go
 ```
+
+**方式二：使用 Makefile（推荐）**
+```bash
+cd services/backend
+make build    # 构建应用
+make run      # 构建并运行
+```
+
+**Makefile 可用命令**：
+- `make build` - 构建 Go 应用
+- `make test` - 运行测试
+- `make clean` - 清理构建产物
+- `make run` - 构建并运行应用
+- `make docker-build` - 构建 Docker 镜像（本地测试）
+- `make help` - 显示帮助信息
 
 服务会监听 `:8080`，所有数据存储在内存中，并在启动时创建 `admin/admin` 以及若干随机示例用户。暴露的接口如下：
 
@@ -35,7 +60,7 @@ go run main.go
 ### 前端（UmiJS）
 
 ```bash
-cd frontend
+cd services/frontend
 npm install
 npm run dev
 ```
@@ -46,26 +71,56 @@ npm run dev
 
 构建 Go 服务镜像：
 
+**方式一：直接使用 Docker**
 ```bash
-docker build -t go-backend:latest backend
+docker build -t go-backend:latest services/backend
 ```
+
+**方式二：使用 Makefile**
+```bash
+cd services/backend
+make docker-build    # 构建 Docker 镜像（本地测试）
+```
+
+> **注意**：在 Zadig 构建脚本中，使用 `make build` 构建应用，然后使用 `docker build -t $IMAGE` 构建并推送镜像。
 
 构建 Nginx（包含前端静态文件）镜像：
 
 ```bash
-docker build -t micro-frontend-entry:latest -f nginx/Dockerfile .
+docker build -t micro-frontend-entry:latest -f services/nginx/Dockerfile .
 ```
 
-`nginx/Dockerfile` 会在第一阶段安装前端依赖并执行 `npm run build`，然后将 `dist` 内容复制到轻量级 Nginx 镜像中，同时带入 `nginx/default.conf` 以将 `/api` 代理至 `go-backend:8080`。
+`services/nginx/Dockerfile` 会在第一阶段安装前端依赖并执行 `npm run build`，然后将 `dist` 内容复制到轻量级 Nginx 镜像中，同时带入 `services/nginx/default.conf` 以将 `/api` 代理至 `go-backend:8080`。
 
 ## Kubernetes 部署
 
-在打好镜像并推送到可访问的镜像仓库后，更新 `deploy/k8s/backend.yaml` 与 `deploy/k8s/nginx.yaml` 中的 `image` 字段，然后依次执行：
+在打好镜像并推送到可访问的镜像仓库后，更新 `deploy/k8s/backend/deployment.yaml` 与 `deploy/k8s/nginx/deployment.yaml` 中的 `image` 字段，然后依次执行：
 
 ```bash
+# 创建命名空间
 kubectl apply -f deploy/k8s/namespace.yaml
-kubectl apply -f deploy/k8s/backend.yaml
-kubectl apply -f deploy/k8s/nginx.yaml
+
+# 部署后端服务
+kubectl apply -f deploy/k8s/backend/
+
+# 部署前端入口（Nginx）
+kubectl apply -f deploy/k8s/nginx/
+```
+
+或者按资源类型分别部署：
+
+```bash
+# 创建命名空间
+kubectl apply -f deploy/k8s/namespace.yaml
+
+# 部署后端
+kubectl apply -f deploy/k8s/backend/deployment.yaml
+kubectl apply -f deploy/k8s/backend/service.yaml
+
+# 部署前端
+kubectl apply -f deploy/k8s/nginx/deployment.yaml
+kubectl apply -f deploy/k8s/nginx/service.yaml
+kubectl apply -f deploy/k8s/nginx/ingress.yaml
 ```
 
 资源说明：

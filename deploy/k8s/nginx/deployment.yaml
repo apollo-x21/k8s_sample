@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-entry
+  # ⚠️ 注意：命名空间必须与 namespace.yaml 中的 name 保持一致
+  namespace: micro-demo
+  labels:
+    app.kubernetes.io/name: micro-demo
+    app.kubernetes.io/instance: web-entry
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: micro-demo
+      app.kubernetes.io/instance: web-entry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: micro-demo
+        app.kubernetes.io/instance: web-entry
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: nginx
+          # ⚠️ 注意：此镜像地址会根据构建产物自动替换
+          # - 使用 Zadig 部署时，构建阶段生成的镜像地址会自动替换此值
+          # - 手动部署时，需要先构建镜像并替换为实际地址
+          image: registry.example.com/micro-demo/micro-frontend-entry:v1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+          # 如果使用私有镜像仓库，需要配置 imagePullSecrets
+          # imagePullSecrets:
+          #   - name: default-registry-secret
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+

@@ -5,16 +5,16 @@ tmp/
 /dist/
 
 # Go build artifacts
-/backend/bin/
-/backend/server
+/services/backend/bin/
+/services/backend/server
 *.out
-/backend/.gocache
-/backend/.gobuild
+/services/backend/.gocache
+/services/backend/.gobuild
 
 # Node modules / build
-/frontend/node_modules/
-/frontend/.umi/
-/frontend/dist/
+/services/frontend/node_modules/
+/services/frontend/.umi/
+/services/frontend/dist/
 
 # IDE/editor
 .idea/

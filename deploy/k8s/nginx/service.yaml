@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-entry
+  # ⚠️ 注意：命名空间必须与 namespace.yaml 中的 name 保持一致
+  namespace: micro-demo
+spec:
+  type: ClusterIP
+  selector:
+    app: web-entry
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+
