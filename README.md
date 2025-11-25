@@ -14,6 +14,9 @@ services/                      # 所有服务代码
   ├── backend/                 # Go 后端（main.go, go.mod, Dockerfile）
   ├── frontend/                # UmiJS 前端应用
   └── nginx/                   # Nginx 配置与发布 Dockerfile
+build/                         # 构建脚本（用于 Zadig 配置）
+  ├── backend.sh               # 后端构建脚本
+  └── nginx.sh                 # 前端构建脚本
 deploy/k8s/                    # Kubernetes 部署文件
   ├── namespace.yaml           # Namespace 资源
   ├── backend/                 # 后端服务资源

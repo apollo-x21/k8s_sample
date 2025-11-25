@@ -25,6 +25,9 @@ k8s_sample/
 │   ├── backend/       # Go 后端服务 (main.go, go.mod, Dockerfile)
 │   ├── frontend/      # UmiJS 前端源代码
 │   └── nginx/         # Nginx Dockerfile + default.conf（使用前端构建产物）
+├── build/             # 构建脚本（用于 Zadig 配置）
+│   ├── backend.sh     # 后端构建脚本
+│   └── nginx.sh       # 前端构建脚本
 └── deploy/
     └── k8s/           # Kubernetes YAML 文件（分离结构）
         ├── namespace.yaml
@@ -101,7 +104,7 @@ Zadig 会自动识别项目中的服务定义。操作步骤：
 2. **代码信息**：
    - 选择你的代码库
    - 默认分支选择 `main`
-3. **构建脚本**：填入以下内容
+3. **构建脚本**：可以直接复制 `build/backend.sh` 文件中的内容，或填入以下内容：
 
 ```bash
 #!/bin/bash
@@ -114,6 +117,8 @@ docker build -t $IMAGE -f Dockerfile .
 docker push $IMAGE
 ```
 
+> **提示**：构建脚本已保存在 `build/backend.sh`，可以直接复制使用。
+
 > **说明**：也可以直接使用命令 `go mod tidy && go build -o server .`，但使用 Makefile 更符合官方示例的标准。
 
 > **重要**：必须使用 `$IMAGE` 变量，这是 Zadig 自动提供的环境变量，包含完整的镜像地址（仓库+标签）。
@@ -125,7 +130,7 @@ docker push $IMAGE
 1. **代码信息**：
    - 选择你的代码库
    - 默认分支选择 `main`
-2. **构建脚本**：填入以下内容
+2. **构建脚本**：可以直接复制 `build/nginx.sh` 文件中的内容，或填入以下内容：
 
 ```bash
 #!/bin/bash
@@ -134,6 +139,8 @@ set -e
 docker build -t $IMAGE -f services/nginx/Dockerfile .
 docker push $IMAGE
 ```
+
+> **提示**：构建脚本已保存在 `build/nginx.sh`，可以直接复制使用。
 
 > **说明**：`services/nginx/Dockerfile` 会在构建时自动处理前端代码的编译和打包，无需单独的前端构建步骤。
 
