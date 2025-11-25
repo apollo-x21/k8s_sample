@@ -1,0 +1,22 @@
+# General
+.DS_Store
+*.log
+tmp/
+/dist/
+
+# Go build artifacts
+/backend/bin/
+/backend/server
+*.out
+/backend/.gocache
+/backend/.gobuild
+
+# Node modules / build
+/frontend/node_modules/
+/frontend/.umi/
+/frontend/dist/
+
+# IDE/editor
+.idea/
+.vscode/
+*.swp
